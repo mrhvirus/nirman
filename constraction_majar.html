@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Book - Professional Edition</title>
+    <!-- html2pdf Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Hind+Siliguri:wght@700&display=swap');
+
+        :root {
+            --neon-teal: #00f2ff;
+            --teal-dim: #00666c;
+            --card-glass: rgba(0, 20, 20, 0.95);
+            --warning-gold: #ffaa00;
+        }
+
+        @keyframes blink-teal {
+            0% { box-shadow: 0 4px 10px rgba(0, 242, 255, 0.2), inset 0 0 5px rgba(0, 242, 255, 0.1); border-color: var(--teal-dim); }
+            50% { box-shadow: 0 6px 15px rgba(0, 242, 255, 0.6), inset 0 0 10px rgba(0, 242, 255, 0.3); border-color: var(--neon-teal); }
+            100% { box-shadow: 0 4px 10px rgba(0, 242, 255, 0.2), inset 0 0 5px rgba(0, 242, 255, 0.1); border-color: var(--teal-dim); }
+        }
+
+        body {
+            margin: 0; padding: 10px;
+            background: #000; color: #fff;
+            font-family: 'Hind Siliguri', sans-serif;
+            font-weight: 700;
+        }
+
+        .d1-container {
+            max-width: 500px; margin: auto;
+            background: var(--card-glass);
+            border: 2px solid var(--teal-dim);
+            border-top: 5px solid var(--neon-teal);
+            border-radius: 20px; padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        h2 { font-family: 'Orbitron'; color: var(--neon-teal); margin: 0; font-size: 1.5rem; text-align: center; margin-bottom: 20px; }
+
+        .tab-menu { display: flex; gap: 8px; margin-bottom: 25px; }
+        .tab-btn {
+            flex: 1; padding: 12px; border: 1px solid var(--teal-dim);
+            background: rgba(0,0,0,0.5); color: #fff; cursor: pointer;
+            border-radius: 8px; font-size: 1.1rem; font-weight: 700;
+        }
+        .tab-btn.active { background: var(--neon-teal); color: #000; box-shadow: 0 0 15px var(--neon-teal); }
+
+        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .full-width { grid-column: span 2; }
+
+        label { display: block; font-size: 0.9rem; color: var(--neon-teal); margin-bottom: 6px; text-transform: uppercase; }
+        
+        input, select {
+            width: 100%; padding: 12px; 
+            background: #001a1a;
+            border: 2px solid var(--teal-dim); 
+            border-radius: 8px;
+            color: #fff; font-size: 1.1rem; font-weight: 700;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.3s;
+            animation: blink-teal 2s infinite ease-in-out;
+        }
+
+        .calc-btn {
+            width: 100%; padding: 18px; background: transparent;
+            border: 3px solid var(--neon-teal); color: var(--neon-teal);
+            font-family: 'Orbitron'; font-weight: 900; cursor: pointer;
+            border-radius: 12px; font-size: 1.3rem; transition: 0.3s;
+            text-transform: uppercase;
+        }
+        .calc-btn:hover { background: var(--neon-teal); color: #000; box-shadow: 0 0 20px var(--neon-teal); }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.98); display: none; 
+            z-index: 1000; overflow-y: auto; padding: 0;
+            flex-direction: column; align-items: center;
+        }
+
+        .pdf-wrapper { width: 100%; display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
+
+        #pdfArea {
+            width: 100%; max-width: 148mm; min-height: 210mm;
+            background: #001a1a; padding: 15mm 10mm; color: #fff; box-sizing: border-box;
+            display: flex; flex-direction: column; border: 2px solid var(--teal-dim);
+        }
+
+        .res-section-title { font-size: 1.3rem; color: var(--warning-gold); margin: 20px 0 10px 0; border-left: 5px solid var(--warning-gold); padding-left: 12px; text-transform: uppercase; }
+        .res-item { display: flex; justify-content: space-between; padding: 8px 5px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 1.1rem; }
+        .res-val { color: var(--neon-teal); }
+        
+        .total-price-box { 
+            margin-top: 20px; padding: 25px; 
+            background: rgba(0, 242, 255, 0.1); border: 3px solid var(--neon-teal); 
+            text-align: center; font-size: 1.8rem; border-radius: 15px; font-weight: 900;
+            color: #fff; text-shadow: 0 0 10px var(--neon-teal);
+        }
+
+        .action-grid { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px; 
+            margin: 20px auto; width: 92%; max-width: 148mm; padding-bottom: 40px;
+        }
+        .btn-action { padding: 18px; border: none; border-radius: 10px; font-weight: 900; cursor: pointer; font-size: 1.1rem; }
+        .btn-pdf { background: var(--warning-gold); color: #000; }
+        .btn-share { background: #0088ff; color: #fff; }
+        .btn-close { background: #ff4444; color: #fff; grid-column: span 2; }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="d1-container">
+    <h2>PROFESSIONAL BOOK</h2>
+    
+    <div class="tab-menu">
+        <button class="tab-btn active" onclick="switchTab('wall', this)">গাঁথুনি</button>
+        <button class="tab-btn" onclick="switchTab('casting', this)">ঢালাই</button>
+        <button class="tab-btn" onclick="switchTab('rod', this)">রড</button>
+    </div>
+
+    <!-- Wall Section -->
+    <div id="wall-sec">
+        <div class="input-grid">
+            <div class="full-width"><label>পুরুত্ব</label><select id="wThick"><option value="5">৫ ইঞ্চি</option><option value="10">১০ ইঞ্চি</option></select></div>
+            <div><label>দৈর্ঘ্য (ফুট)</label><input type="number" id="wLen" placeholder="0"></div>
+            <div><label>উচ্চতা (ফুট)</label><input type="number" id="wHeight" placeholder="0"></div>
+            <div class="full-width">
+                <label>মশলার অনুপাত</label>
+                <select id="wRatio">
+                    <option value="3">১ : ৩</option>
+                    <option value="4" selected>১ : ৪</option>
+                    <option value="5">১ : ৫</option>
+                    <option value="6">১ : ৬</option>
+                </select>
+            </div>
+            <div><label>ইটের দাম (প্রতি টি)</label><input type="number" id="pBrick" value="12"></div>
+            <div><label>সিমেন্ট দাম (ব্যাগ)</label><input type="number" id="pCementW" value="550"></div>
+            <div class="full-width"><label>বালুর দাম (সেফটি)</label><input type="number" id="pSandW" value="40"></div>
+        </div>
+        <button class="calc-btn" onclick="calcWall()">হিসাব</button>
+    </div>
+
+    <!-- Casting Section -->
+    <div id="casting-sec" class="hidden">
+        <div class="input-grid">
+            <div><label>দৈর্ঘ্য (ফুট)</label><input type="number" id="cLen" placeholder="0"></div>
+            <div><label>প্রস্থ (ফুট)</label><input type="number" id="cWidth" placeholder="0"></div>
+            <div><label>পুরুত্ব (ইঞ্চি)</label><input type="number" id="cThick" value="5"></div>
+            <div class="full-width">
+                <label>মিশ্রণ অনুপাত (সিমেন্ট : বালু : খোয়া)</label>
+                <select id="cRatio">
+                    <option value="3">১ : ১.৫ : ৩</option>
+                    <option value="4" selected>১ : ২ : ৪</option>
+                    <option value="5">১ : ২.৫ : ৫</option>
+                    <option value="6">১ : ৩ : ৬</option>
+                </select>
+            </div>
+            <div><label>সিমেন্ট দর</label><input type="number" id="pCementC" value="550"></div>
+            <div><label>বালু দর</label><input type="number" id="pSandC" value="40"></div>
+            <div class="full-width"><label>খোয়া দর (সেফটি)</label><input type="number" id="pKhoya" value="120"></div>
+        </div>
+        <button class="calc-btn" onclick="calcCasting()">হিসাব</button>
+    </div>
+
+    <!-- Rod Section -->
+    <div id="rod-sec" class="hidden">
+        <div class="input-grid">
+            <div class="full-width">
+                <label>রডের ব্যাস</label>
+                <select id="rDia">
+                    <option value="4">4 mm</option>
+                    <option value="6">6 mm</option>
+                    <option value="8">8 mm</option>
+                    <option value="10">10 mm</option>
+                    <option value="12" selected>12 mm</option>
+                    <option value="16">16 mm</option>
+                    <option value="20">20 mm</option>
+                    <option value="22">22 mm</option>
+                    <option value="25">25 mm</option>
+                    <option value="28">28 mm</option>
+                    <option value="32">32 mm</option>
+                </select>
+            </div>
+            <div><label>দৈর্ঘ্য (ফুট)</label><input type="number" id="rLen" placeholder="0"></div>
+            <div><label>রডের দাম (কেজি)</label><input type="number" id="pRod" value="98"></div>
+        </div>
+        <button class="calc-btn" onclick="calcRod()">হিসাব</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+    <div class="pdf-wrapper">
+        <div id="pdfArea">
+            <div style="text-align:center; border-bottom:3px solid var(--neon-teal); padding-bottom:15px;">
+                <h2 style="margin:0; color:var(--neon-teal);">ESTIMATION REPORT</h2>
+                <div style="margin-top:10px; font-size:1rem; color:#aaa;">তারিখ: <span id="currentDate"></span></div>
+            </div>
+            <div id="resBody"></div>
+            <div style="text-align:center; font-size:0.9rem; color:#555; margin-top:20px;">Generated by Professional Book</div>
+        </div>
+    </div>
+    <div class="action-grid">
+        <button class="btn-action btn-pdf" onclick="downloadPDF()">PDF ডাউনলোড</button>
+        <button class="btn-action btn-share" onclick="sharePDF()">PDF শেয়ার</button>
+        <button class="btn-action btn-close" onclick="closeModal()">বন্ধ করুন</button>
+    </div>
+</div>
+
+<script>
+    const WASTAGE = 1.10;
+
+    function switchTab(tab, btn) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        ['wall-sec', 'casting-sec', 'rod-sec'].forEach(s => document.getElementById(s).classList.add('hidden'));
+        document.getElementById(tab + '-sec').classList.remove('hidden');
+    }
+
+    function openModal(html) {
+        document.getElementById('resBody').innerHTML = html;
+        document.getElementById('currentDate').innerText = new Date().toLocaleDateString('bn-BD');
+        document.getElementById('modalOverlay').style.display = 'flex';
+    }
+
+    function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; }
+
+    function calcWall() {
+        const l = parseFloat(document.getElementById('wLen').value) || 0;
+        const h = parseFloat(document.getElementById('wHeight').value) || 0;
+        const ratio = parseFloat(document.getElementById('wRatio').value);
+        const pB = parseFloat(document.getElementById('pBrick').value);
+        const pC = parseFloat(document.getElementById('pCementW').value);
+        const pS = parseFloat(document.getElementById('pSandW').value);
+        const t = document.getElementById('wThick').value;
+
+        const area = l * h;
+        const bricks = Math.ceil((t == "5" ? area*5 : area*10) * WASTAGE);
+        let dryVol = area * (t == "5" ? 0.22 : 0.45) * WASTAGE;
+        
+        const sumRatio = 1 + ratio;
+        const cement = Math.ceil((dryVol * 1/sumRatio) / 1.25);
+        const sand = (dryVol * ratio/sumRatio).toFixed(2);
+        const total = (bricks * pB) + (cement * pC) + (sand * pS);
+
+        openModal(`
+            <div class="res-section-title">ইনপুট ডাটা</div>
+            <div class="res-item"><span>কাজের ধরন:</span><span class="res-val">${t}" গাঁথুনি</span></div>
+            <div class="res-item"><span>দৈর্ঘ্য:</span><span class="res-val">${l} ফুট</span></div>
+            <div class="res-item"><span>উচ্চতা:</span><span class="res-val">${h} ফুট</span></div>
+            <div class="res-item"><span>পুরুত্ব:</span><span class="res-val">${t} ইঞ্চি</span></div>
+            <div class="res-item"><span>মশলার অনুপাত:</span><span class="res-val">১ : ${ratio}</span></div>
+            
+            <div class="res-section-title">রেট চার্ট (ধরা হয়েছে)</div>
+            <div class="res-item"><span>ইটের দাম:</span><span class="res-val">${pB} ৳/টি</span></div>
+            <div class="res-item"><span>সিমেন্ট দাম:</span><span class="res-val">${pC} ৳/ব্যাগ</span></div>
+            <div class="res-item"><span>বালুর দাম:</span><span class="res-val">${pS} ৳/সেফটি</span></div>
+
+            <div class="res-section-title">ফলাফল ও মালামাল</div>
+            <div class="res-item"><span>মোট ভলিউম (শুকনো):</span><span class="res-val">${dryVol.toFixed(2)} CFT</span></div>
+            <div class="res-item"><span>মোট ইট (+১০%):</span><span class="res-val">${bricks} টি</span></div>
+            <div class="res-item"><span>সিমেন্ট প্রয়োজন:</span><span class="res-val">${cement} ব্যাগ</span></div>
+            <div class="res-item"><span>বালু প্রয়োজন:</span><span class="res-val">${sand} সেফটি</span></div>
+            
+            <div class="total-price-box">মোট খরচ: ${total.toLocaleString()} ৳</div>
+        `);
+    }
+
+    function calcCasting() {
+        const l = parseFloat(document.getElementById('cLen').value) || 0;
+        const w = parseFloat(document.getElementById('cWidth').value) || 0;
+        const t = parseFloat(document.getElementById('cThick').value) || 0;
+        const ratioValue = parseFloat(document.getElementById('cRatio').value);
+        const pC = parseFloat(document.getElementById('pCementC').value);
+        const pS = parseFloat(document.getElementById('pSandC').value);
+        const pK = parseFloat(document.getElementById('pKhoya').value);
+
+        const wetVol = (l * w * (t/12));
+        const dryVol = wetVol * 1.54 * WASTAGE;
+        
+        let r1, r2, r3;
+        if(ratioValue == 3) { r1=1; r2=1.5; r3=3; }
+        else if(ratioValue == 4) { r1=1; r2=2; r3=4; }
+        else if(ratioValue == 5) { r1=1; r2=2.5; r3=5; }
+        else { r1=1; r2=3; r3=6; }
+
+        const sumRatio = r1 + r2 + r3;
+        const cement = Math.ceil((dryVol * r1/sumRatio) / 1.25);
+        const sand = (dryVol * r2/sumRatio).toFixed(2);
+        const khoya = (dryVol * r3/sumRatio).toFixed(2);
+        const total = (cement * pC) + (sand * pS) + (khoya * pK);
+
+        openModal(`
+            <div class="res-section-title">ইনপুট ডাটা</div>
+            <div class="res-item"><span>কাজের ধরন:</span><span class="res-val">ঢালাই (Casting)</span></div>
+            <div class="res-item"><span>দৈর্ঘ্য:</span><span class="res-val">${l} ফুট</span></div>
+            <div class="res-item"><span>প্রস্থ:</span><span class="res-val">${w} ফুট</span></div>
+            <div class="res-item"><span>পুরুত্ব:</span><span class="res-val">${t} ইঞ্চি</span></div>
+            <div class="res-item"><span>মিশ্রণ অনুপাত:</span><span class="res-val">${r1}:${r2}:${r3}</span></div>
+
+            <div class="res-section-title">রেট চার্ট (ধরা হয়েছে)</div>
+            <div class="res-item"><span>সিমেন্ট দর:</span><span class="res-val">${pC} ৳/ব্যাগ</span></div>
+            <div class="res-item"><span>বালু দর:</span><span class="res-val">${pS} ৳/সেফটি</span></div>
+            <div class="res-item"><span>খোয়া দর:</span><span class="res-val">${pK} ৳/সেফটি</span></div>
+
+            <div class="res-section-title">ফলাফল ও মালামাল</div>
+            <div class="res-item"><span>মোট ভলিউম (শুকনো):</span><span class="res-val">${dryVol.toFixed(2)} CFT</span></div>
+            <div class="res-item"><span>সিমেন্ট প্রয়োজন:</span><span class="res-val">${cement} ব্যাগ</span></div>
+            <div class="res-item"><span>বালু প্রয়োজন:</span><span class="res-val">${sand} সেফটি</span></div>
+            <div class="res-item"><span>খোয়া প্রয়োজন:</span><span class="res-val">${khoya} সেফটি</span></div>
+            
+            <div class="total-price-box">মোট খরচ: ${total.toLocaleString()} ৳</div>
+        `);
+    }
+
+    function calcRod() {
+        const d = parseFloat(document.getElementById('rDia').value);
+        const l = parseFloat(document.getElementById('rLen').value) || 0;
+        const pR = parseFloat(document.getElementById('pRod').value);
+
+        const weight = (((d * d) / 532.17) * l * WASTAGE).toFixed(2);
+        const total = Math.ceil(weight * pR);
+
+        openModal(`
+            <div class="res-section-title">ইনপুট ডাটা</div>
+            <div class="res-item"><span>কাজের ধরন:</span><span class="res-val">রড ক্যালকুলেশন</span></div>
+            <div class="res-item"><span>রডের ব্যাস (সাইজ):</span><span class="res-val">${d} mm</span></div>
+            <div class="res-item"><span>রডের মোট দৈর্ঘ্য:</span><span class="res-val">${l} ফুট</span></div>
+            <div class="res-item"><span>রডের দাম:</span><span class="res-val">${pR} ৳/কেজি</span></div>
+
+            <div class="res-section-title">ফলাফল</div>
+            <div class="res-item"><span>মোট ওজন (+১০% ওয়েস্টেজ):</span><span class="res-val">${weight} কেজি</span></div>
+            
+            <div class="total-price-box">মোট খরচ: ${total.toLocaleString()} ৳</div>
+        `);
+    }
+
+    function getPDFOptions() {
+        return {
+            margin: 0,
+            filename: 'Estimation_Report.pdf',
+            image: { type: 'jpeg', quality: 1 },
+            html2canvas: { scale: 2, backgroundColor: '#001a1a' },
+            jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' }
+        };
+    }
+
+    function downloadPDF() {
+        const element = document.getElementById('pdfArea');
+        html2pdf().set(getPDFOptions()).from(element).save();
+    }
+
+    async function sharePDF() {
+        const element = document.getElementById('pdfArea');
+        const opt = getPDFOptions();
+        try {
+            const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
+            const file = new File([pdfBlob], 'Estimation_Report.pdf', { type: 'application/pdf' });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    files: [file],
+                    title: 'Estimation Report',
+                    text: 'নিচে আপনার বিস্তারিত মালামালের হিসাবের রিপোর্টটি দেওয়া হলো।'
+                });
+            } else {
+                alert("আপনার ব্রাউজারে শেয়ার অপশন কাজ করছে না। দয়া করে ডাউনলোড করুন।");
+            }
+        } catch (error) {
+            alert("শেয়ার করতে সমস্যা হয়েছে।");
+        }
+    }
+</script>
+</body>
+</html>
